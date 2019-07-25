@@ -1,0 +1,12 @@
+.git
+.gitconfig
+.gitignore
+.DS_Store
+/bin/
+.idea
+*.iml
+.classpath
+.project
+.settings
+bin
+.svn
