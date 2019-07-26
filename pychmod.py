@@ -51,6 +51,7 @@ def _get_options():
   """This function gets the options from sys.arg"""
 
   try:
+    # pylint: disable=unused-variable
     opts, args = getopt.getopt(sys.argv[1:], 'd:f:p:x:hsv',
                                ['dir=', 'dirperms=', 'fileperms=',
                                 'execperms=', 'symlinks', 'help',
