@@ -4,7 +4,7 @@
 # All Rights Reserved.
 #
 # Script Name: pychmod.py
- 
+
 """Chmod a directory and all of its subdirectories and files.
 
 This script chmods a directory and all its subdirectories to the specified
@@ -29,7 +29,7 @@ Usage: pychmod.py --dir[-d]=<dir> [--dirperms|-p]=<perm> [--fileperms|-f]=<perm>
 """
 
 __author__ = "megaspaz <megaspaz2k7<at>gmail.com>"
- 
+
 import getopt
 import os
 import re
@@ -46,12 +46,13 @@ _EXE_LIST = [
 _DEF_VERBOSE = False
 _DEF_SYM = False
 
+
 def _GetOptions():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'd:f:p:x:hsv', 
+    opts, args = getopt.getopt(sys.argv[1:], 'd:f:p:x:hsv',
         ['dir=', 'dirperms=', 'fileperms=', 'execperms=', 'symlinks', 'help',
             'verbose'])
- 
+
     basedir = None
     dirperms = _DEF_DIR_PERMS
     fileperms = _DEF_FILE_PERMS
@@ -61,7 +62,7 @@ def _GetOptions():
     for (name, value) in opts:
       if name in ("-h", "--help"):
         # Print usage and exit.
-        return (0, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS, 
+        return (0, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
             _DEF_VERBOSE, _DEF_SYM)
       elif name in ("-d", "--dir"):
         basedir = value.strip()
@@ -78,7 +79,7 @@ def _GetOptions():
       else:
         # Throw usage error.
         raise KeyError
- 
+
     if basedir is None:
       raise KeyError
 
@@ -95,11 +96,12 @@ def _GetOptions():
       scriptperms = _DEF_EXEC_PERMS
 
     return 0, basedir, dirperms, fileperms, scriptperms, verbose, followsymlinks
- 
+
   except(getopt.GetoptError, KeyError):
-    return (-1, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS, 
+    return (-1, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
         _DEF_VERBOSE, _DEF_SYM)
- 
+
+
 def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
   listing = os.listdir(directory)
   dirlist = [ os.path.join(directory, filename) for filename in listing ]
@@ -107,7 +109,7 @@ def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
   # Change the permissions of the passed directory and print if verbose is true.
   os.chmod(directory, int(dperms, 8))
   if verbose:
-    print 'dir: %s' % directory
+    sys.stdout.write('dir: %s' % directory)
 
   # Loop through the listing looking for sub directories.
   for somefile in dirlist:
@@ -128,7 +130,7 @@ def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
         # This is a regular file - no file extension.
         os.chmod(somefile, int(fperms, 8))
         if verbose:
-          print 'file: %s' % somefile
+          sys.stdout.write('file: %s' % somefile)
       else:
         # This file has a file extension. Check to see if it's in exec list.
         fileext = '.%s' % partslist[-1]
@@ -136,15 +138,16 @@ def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
           # Not in exec list. Regular file.
           os.chmod(somefile, int(fperms, 8))
           if verbose:
-            print 'file: %s' % somefile
+            sys.stdout.write('file: %s' % somefile)
         else:
           # Is in the exec list. Script/Exec file.
           os.chmod(somefile, int(xperms, 8))
           if verbose:
-            print 'script/executable: %s' % somefile
- 
+            sys.stdout.write('script/executable: %s' % somefile)
+
+
 def main():
-  (retval, startdir, dirperms, fileperms, scriptperms, 
+  (retval, startdir, dirperms, fileperms, scriptperms,
       verbose, followsymlinks) = _GetOptions()
   if retval:
     # getopt error occurred.
@@ -154,18 +157,19 @@ def main():
   else:
     if startdir is None:
       # User entered -h for option
-      print  __doc__
+      sys.stdout.write(__doc__)
       return retval
- 
+
   try:
     print ('chmod dirs to %s\nchmod files to %s\n'
         'chmod scripts to %s\n' % (dirperms, fileperms, scriptperms))
     _ChmodFiles(startdir, dirperms, fileperms, scriptperms, verbose,
         followsymlinks)
     return 0
-  except(IOError, OSError, MemoryError), err:
+  except(IOError, OSError, MemoryError) as err:
     sys.stderr.write('%s\n' % str(err))
     return err.errno
- 
+
+
 if '__main__' == __name__:
   sys.exit(main())
