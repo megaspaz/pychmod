@@ -47,11 +47,14 @@ _DEF_VERBOSE = False
 _DEF_SYM = False
 
 
-def _GetOptions():
+def _get_options():
+  """This function gets the options from sys.arg"""
+
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'd:f:p:x:hsv',
-        ['dir=', 'dirperms=', 'fileperms=', 'execperms=', 'symlinks', 'help',
-            'verbose'])
+                               ['dir=', 'dirperms=', 'fileperms=',
+                                'execperms=', 'symlinks', 'help',
+                                'verbose'])
 
     basedir = None
     dirperms = _DEF_DIR_PERMS
@@ -63,8 +66,9 @@ def _GetOptions():
       if name in ("-h", "--help"):
         # Print usage and exit.
         return (0, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
-            _DEF_VERBOSE, _DEF_SYM)
-      elif name in ("-d", "--dir"):
+                _DEF_VERBOSE, _DEF_SYM)
+
+      if name in ("-d", "--dir"):
         basedir = value.strip()
       elif name in ("-p", "--dirperms"):
         dirperms = value.strip()
@@ -99,12 +103,14 @@ def _GetOptions():
 
   except(getopt.GetoptError, KeyError):
     return (-1, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
-        _DEF_VERBOSE, _DEF_SYM)
+            _DEF_VERBOSE, _DEF_SYM)
 
 
-def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
+def _chmod_files(directory, dperms, fperms, xperms, verbose, followsymlinks):
+  """Change permissions depending on the type of resource"""
+
   listing = os.listdir(directory)
-  dirlist = [ os.path.join(directory, filename) for filename in listing ]
+  dirlist = [os.path.join(directory, filename) for filename in listing]
 
   # Change the permissions of the passed directory and print if verbose is true.
   os.chmod(directory, int(dperms, 8))
@@ -121,7 +127,7 @@ def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
 
     if os.path.isdir(somefile):
       # Traverse this directory
-      _ChmodFiles(somefile, dperms, fperms, xperms, verbose, followsymlinks)
+      _chmod_files(somefile, dperms, fperms, xperms, verbose, followsymlinks)
     else:
       # This is a regular file. chmod and print if verbose is true.
       # Check to see if somefile has a file extension.
@@ -147,29 +153,31 @@ def _ChmodFiles(directory, dperms, fperms, xperms, verbose, followsymlinks):
 
 
 def main():
+  """Main program."""
+
   (retval, startdir, dirperms, fileperms, scriptperms,
-      verbose, followsymlinks) = _GetOptions()
+      verbose, followsymlinks) = _get_options()
   if retval:
     # getopt error occurred.
-    sys.stderr.write('Start directory not specified or ' 
-      'bad option used.\n\n%s\n' % __doc__)
+    sys.stderr.write('Start directory not specified or '
+                     'bad option used.\n\n%s\n' % __doc__)
     return retval
-  else:
-    if startdir is None:
-      # User entered -h for option
-      sys.stdout.write(__doc__)
-      return retval
+
+  if startdir is None:
+    # User entered -h for option
+    sys.stdout.write(__doc__)
+    return retval
 
   try:
-    print ('chmod dirs to %s\nchmod files to %s\n'
-        'chmod scripts to %s\n' % (dirperms, fileperms, scriptperms))
-    _ChmodFiles(startdir, dirperms, fileperms, scriptperms, verbose,
-        followsymlinks)
+    sys.stdout.write('chmod dirs to %s\nchmod files to %s\n'
+                     'chmod scripts to %s\n' % (dirperms, fileperms, scriptperms))
+    _chmod_files(startdir, dirperms, fileperms, scriptperms, verbose,
+                 followsymlinks)
     return 0
   except(IOError, OSError, MemoryError) as err:
     sys.stderr.write('%s\n' % str(err))
     return err.errno
 
 
-if '__main__' == __name__:
+if __name__ == '__main__':
   sys.exit(main())
