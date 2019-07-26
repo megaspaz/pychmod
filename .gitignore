@@ -10,3 +10,5 @@
 .settings
 bin
 .svn
+.pydevproject
+
