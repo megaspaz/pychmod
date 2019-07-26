@@ -88,16 +88,7 @@ def _get_options():
       raise KeyError
 
     # Process permissions.
-    perm_regex = re.compile('^[0-7]{4}$')
-    get_match = perm_regex.match(dirperms)
-    if get_match is None:
-      dirperms = _DEF_DIR_PERMS
-    get_match = perm_regex.match(fileperms)
-    if get_match is None:
-      fileperms = _DEF_FILE_PERMS
-    get_match = perm_regex.match(scriptperms)
-    if get_match is None:
-      scriptperms = _DEF_EXEC_PERMS
+    dirperms, fileperms, scriptperms = _process_resources()
 
     return 0, basedir, dirperms, fileperms, scriptperms, verbose, followsymlinks
 
@@ -106,11 +97,36 @@ def _get_options():
             _DEF_VERBOSE, _DEF_SYM)
 
 
-def _chmod_files(directory, dperms, fperms, xperms, verbose, followsymlinks):
+def _process_resources():
+  """Determine permissions."""
+
+  dirperms = ""
+  fileperms = ""
+  scriptperms = ""
+
+  perm_regex = re.compile('^[0-7]{4}$')
+  get_match = perm_regex.match(dirperms)
+  if get_match is None:
+    dirperms = _DEF_DIR_PERMS
+  get_match = perm_regex.match(fileperms)
+  if get_match is None:
+    fileperms = _DEF_FILE_PERMS
+  get_match = perm_regex.match(scriptperms)
+  if get_match is None:
+    scriptperms = _DEF_EXEC_PERMS
+
+  return dirperms, fileperms, scriptperms
+
+
+def _chmod_files(directory, perms, verbose, followsymlinks):
   """Change permissions depending on the type of resource"""
 
   listing = os.listdir(directory)
   dirlist = [os.path.join(directory, filename) for filename in listing]
+
+  dperms = perms[0]
+  fperms = perms[1]
+  xperms = perms[2]
 
   # Change the permissions of the passed directory and print if verbose is true.
   os.chmod(directory, int(dperms, 8))
@@ -120,14 +136,13 @@ def _chmod_files(directory, dperms, fperms, xperms, verbose, followsymlinks):
   # Loop through the listing looking for sub directories.
   for somefile in dirlist:
     # Check if somefile is a symlink.
-    if os.path.islink(somefile):
-      if not followsymlinks:
-        # Flag set to False. Do not follow.
-        continue
+    if os.path.islink(somefile) and followsymlinks is False:
+      # Flag set to False. Do not follow.
+      continue
 
     if os.path.isdir(somefile):
       # Traverse this directory
-      _chmod_files(somefile, dperms, fperms, xperms, verbose, followsymlinks)
+      _chmod_files(somefile, [dperms, fperms, xperms], verbose, followsymlinks)
     else:
       # This is a regular file. chmod and print if verbose is true.
       # Check to see if somefile has a file extension.
@@ -171,7 +186,7 @@ def main():
   try:
     sys.stdout.write('chmod dirs to %s\nchmod files to %s\n'
                      'chmod scripts to %s\n' % (dirperms, fileperms, scriptperms))
-    _chmod_files(startdir, dirperms, fileperms, scriptperms, verbose,
+    _chmod_files(startdir, [dirperms, fileperms, scriptperms], verbose,
                  followsymlinks)
     return 0
   except(IOError, OSError, MemoryError) as err:
