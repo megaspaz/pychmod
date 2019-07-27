@@ -125,9 +125,8 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
   listing = os.listdir(directory)
   dirlist = [os.path.join(directory, filename) for filename in listing]
 
-  dperms = perms[0]
-  fperms = perms[1]
-  xperms = perms[2]
+  # Unpack perms list.
+  (dperms, fperms, xperms) = perms
 
   # Change the permissions of the passed directory and print if verbose is true.
   os.chmod(directory, int(dperms, 8))
