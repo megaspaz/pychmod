@@ -66,8 +66,7 @@ def _get_options():
     for (name, value) in opts:
       if name in ("-h", "--help"):
         # Print usage and exit.
-        return (0, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
-                _DEF_VERBOSE, _DEF_SYM)
+        return (0, None, [_DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS], _DEF_VERBOSE, _DEF_SYM)
 
       if name in ("-d", "--dir"):
         basedir = value.strip()
@@ -88,14 +87,10 @@ def _get_options():
     if basedir is None:
       raise KeyError
 
-    # Process permissions.
-    (dirperms, fileperms, scriptperms) = _process_resources(dirperms, fileperms, scriptperms)
-
-    return 0, basedir, dirperms, fileperms, scriptperms, verbose, followsymlinks
+    return 0, basedir, _process_resources(dirperms, fileperms, scriptperms), verbose, followsymlinks
 
   except(getopt.GetoptError, KeyError):
-    return (-1, None, _DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS,
-            _DEF_VERBOSE, _DEF_SYM)
+    return (-1, None, [_DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS], _DEF_VERBOSE, _DEF_SYM)
 
 
 def _process_resources(dirperms, fileperms, scriptperms):
@@ -112,7 +107,7 @@ def _process_resources(dirperms, fileperms, scriptperms):
   if get_match is None:
     scriptperms = _DEF_EXEC_PERMS
 
-  return dirperms, fileperms, scriptperms
+  return [dirperms, fileperms, scriptperms]
 
 
 def _use_permissions(somefile, fperms, xperms):
@@ -129,7 +124,7 @@ def _use_permissions(somefile, fperms, xperms):
   finally:
     file_desc.close()
 
-  return xperms if line.startswith("!#") else fperms
+  return xperms if line.startswith("#!") else fperms
 
 
 def _chmod_files(directory, perms, verbose, followsymlinks):
@@ -182,8 +177,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
 def main():
   """Main program."""
 
-  (retval, startdir, dirperms, fileperms, scriptperms,
-      verbose, followsymlinks) = _get_options()
+  (retval, startdir, (dirperms, fileperms, scriptperms), verbose, followsymlinks) = _get_options()
   if retval:
     # getopt error occurred.
     sys.stderr.write('Start directory not specified or '
