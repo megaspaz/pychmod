@@ -89,7 +89,7 @@ def _get_options():
       raise KeyError
 
     # Process permissions.
-    dirperms, fileperms, scriptperms = _process_resources()
+    (dirperms, fileperms, scriptperms) = _process_resources(dirperms, fileperms, scriptperms)
 
     return 0, basedir, dirperms, fileperms, scriptperms, verbose, followsymlinks
 
@@ -98,12 +98,8 @@ def _get_options():
             _DEF_VERBOSE, _DEF_SYM)
 
 
-def _process_resources():
-  """Determine permissions."""
-
-  dirperms = ""
-  fileperms = ""
-  scriptperms = ""
+def _process_resources(dirperms, fileperms, scriptperms):
+  """Determine permissions. If user input invalid, then assign default permissions."""
 
   perm_regex = re.compile('^[0-7]{4}$')
   get_match = perm_regex.match(dirperms)
@@ -117,6 +113,23 @@ def _process_resources():
     scriptperms = _DEF_EXEC_PERMS
 
   return dirperms, fileperms, scriptperms
+
+
+def _use_permissions(somefile, fperms, xperms):
+  """Determine if we should use script permissions or not."""
+
+  # No file extension? Maybe it's a script. Check She-bang...
+  file_desc = None
+  line = ''
+  try:
+    file_desc = open(somefile, 'r')
+    line = file_desc.readline()
+  except OSError:
+    line = ''
+  finally:
+    file_desc.close()
+
+  return xperms if line.startswith("!#") else fperms
 
 
 def _chmod_files(directory, perms, verbose, followsymlinks):
@@ -144,12 +157,11 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
       # Traverse this directory
       _chmod_files(somefile, [dperms, fperms, xperms], verbose, followsymlinks)
     else:
-      # This is a regular file. chmod and print if verbose is true.
+      # This is a non-dir file. chmod and print if verbose is true.
       # Check to see if somefile has a file extension.
       partslist = somefile.split('.')
       if len(partslist) == 1:
-        # This is a regular file - no file extension.
-        os.chmod(somefile, int(fperms, 8))
+        os.chmod(somefile, int(_use_permissions(somefile, fperms, xperms), 8))
         if verbose:
           sys.stdout.write('file: %s' % somefile)
       else:
