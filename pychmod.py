@@ -177,7 +177,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
 def main():
   """Main program."""
 
-  (retval, startdir, (dirperms, fileperms, scriptperms), verbose, followsymlinks) = _get_options()
+  retval, startdir, (dirperms, fileperms, scriptperms), verbose, followsymlinks = _get_options()
   if retval:
     # getopt error occurred.
     sys.stderr.write('Start directory not specified or '
