@@ -150,7 +150,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
 
     if os.path.isdir(somefile):
       # Traverse this directory
-      _chmod_files(somefile, [dperms, fperms, xperms], verbose, followsymlinks)
+      _chmod_files(somefile, perms, verbose, followsymlinks)
     else:
       # This is a non-dir file. chmod and print if verbose is true.
       # Check to see if somefile has a file extension.
@@ -177,7 +177,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
 def main():
   """Main program."""
 
-  retval, startdir, (dirperms, fileperms, scriptperms), verbose, followsymlinks = _get_options()
+  retval, startdir, perms, verbose, followsymlinks = _get_options()
   if retval:
     # getopt error occurred.
     sys.stderr.write('Start directory not specified or '
@@ -191,9 +191,8 @@ def main():
 
   try:
     sys.stdout.write('chmod dirs to %s\nchmod files to %s\n'
-                     'chmod scripts to %s\n' % (dirperms, fileperms, scriptperms))
-    _chmod_files(startdir, [dirperms, fileperms, scriptperms], verbose,
-                 followsymlinks)
+                     'chmod scripts to %s\n' % (perms[0], perms[1], perms[2]))
+    _chmod_files(startdir, perms, verbose, followsymlinks)
     return 0
   except(IOError, OSError, MemoryError) as err:
     sys.stderr.write('%s\n' % str(err))
