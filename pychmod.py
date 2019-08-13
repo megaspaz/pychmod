@@ -84,7 +84,7 @@ def _get_options():
         # Throw usage error.
         raise KeyError
 
-    if basedir is None:
+    if basedir is None or not os.path.isdir(basedir):
       raise ValueError
 
     return 0, basedir, _process_resources(dirperms, fileperms, scriptperms), verbose, followsymlinks
@@ -97,15 +97,9 @@ def _process_resources(dirperms, fileperms, scriptperms):
   """Determine permissions. If user input invalid, then assign default permissions."""
 
   perm_regex = re.compile('^[0-7]{4}$')
-  get_match = perm_regex.match(dirperms)
-  if get_match is None:
-    dirperms = _DEF_DIR_PERMS
-  get_match = perm_regex.match(fileperms)
-  if get_match is None:
-    fileperms = _DEF_FILE_PERMS
-  get_match = perm_regex.match(scriptperms)
-  if get_match is None:
-    scriptperms = _DEF_EXEC_PERMS
+  if (perm_regex.match(dirperms) is None or perm_regex.match(fileperms) is None or
+          perm_regex.match(scriptperms) is None):
+    raise ValueError
 
   return [dirperms, fileperms, scriptperms]
 
