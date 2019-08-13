@@ -85,11 +85,11 @@ def _get_options():
         raise KeyError
 
     if basedir is None:
-      raise KeyError
+      raise ValueError
 
     return 0, basedir, _process_resources(dirperms, fileperms, scriptperms), verbose, followsymlinks
 
-  except(getopt.GetoptError, KeyError):
+  except(getopt.GetoptError, KeyError, ValueError):
     return (-1, None, [_DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS], _DEF_VERBOSE, _DEF_SYM)
 
 
