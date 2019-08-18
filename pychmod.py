@@ -82,15 +82,15 @@ def _get_options():
         verbose = True
       else:
         # Throw usage error.
-        raise KeyError
+        raise KeyError('Invalid flag: %s' % name)
 
     if basedir is None or not os.path.isdir(basedir):
-      raise ValueError
+      raise ValueError('Directory (--dir or -d) required and must be of type directory.')
 
     return 0, basedir, _process_resources(dirperms, fileperms, scriptperms), verbose, followsymlinks
 
-  except(getopt.GetoptError, KeyError, ValueError):
-    return (-1, None, [_DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS], _DEF_VERBOSE, _DEF_SYM)
+  except(getopt.GetoptError, KeyError, ValueError) as err:
+    return (-1, err, [_DEF_DIR_PERMS, _DEF_FILE_PERMS, _DEF_EXEC_PERMS], _DEF_VERBOSE, _DEF_SYM)
 
 
 def _process_resources(dirperms, fileperms, scriptperms):
@@ -99,7 +99,7 @@ def _process_resources(dirperms, fileperms, scriptperms):
   perm_regex = re.compile('^[0-7]{4}$')
   if (perm_regex.match(dirperms) is None or perm_regex.match(fileperms) is None or
           perm_regex.match(scriptperms) is None):
-    raise ValueError
+    raise ValueError('Invalid permission(s). Permission values must consist of 4 digits.')
 
   return [dirperms, fileperms, scriptperms]
 
@@ -174,8 +174,7 @@ def main():
   retval, startdir, perms, verbose, followsymlinks = _get_options()
   if retval:
     # getopt error occurred.
-    sys.stderr.write('Start directory not specified or '
-                     'bad option used.\n\n%s\n' % __doc__)
+    sys.stderr.write('\nERROR: %s\n\n%s\n' % (startdir, __doc__))
     return retval
 
   if startdir is None:
