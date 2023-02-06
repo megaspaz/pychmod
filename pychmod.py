@@ -46,6 +46,17 @@ _EXE_LIST = [
 _DEF_VERBOSE = False
 _DEF_SYM = False
 
+"""
+Sometimes some files should be ignored, they don't need to be checked.
+
+_IGNORE_FILES is just reserved, it is an empty list by default.
+You can update it according to needs if necessary.
+
+For example:
+_IGNORE_FILES = ['.py', '.exe', '.bat']
+"""
+
+_IGNORE_FILES = []
 
 def _get_options():
   """This function gets the options from sys.arg"""
@@ -156,6 +167,13 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
       else:
         # This file has a file extension. Check to see if it's in exec list.
         fileext = '.%s' % partslist[-1]
+
+        # It's in ignore files list, skip it
+        if _IGNORE_FILES.count(fileext) >= 1:
+          if verbose:
+            sys.stdout.write('ignore: %s\n' % somefile)
+          continue
+
         if _EXE_LIST.count(fileext) == 0:
           # Not in exec list. Regular file.
           os.chmod(somefile, int(fperms, 8))
