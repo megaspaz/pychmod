@@ -133,7 +133,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
   # Change the permissions of the passed directory and print if verbose is true.
   os.chmod(directory, int(dperms, 8))
   if verbose:
-    sys.stdout.write('dir: %s' % directory)
+    sys.stdout.write('dir: %s\n' % directory)
 
   # Loop through the listing looking for sub directories.
   for somefile in dirlist:
@@ -152,7 +152,7 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
       if len(partslist) == 1:
         os.chmod(somefile, int(_use_permissions(somefile, fperms, xperms), 8))
         if verbose:
-          sys.stdout.write('file: %s' % somefile)
+          sys.stdout.write('file: %s\n' % somefile)
       else:
         # This file has a file extension. Check to see if it's in exec list.
         fileext = '.%s' % partslist[-1]
@@ -160,12 +160,12 @@ def _chmod_files(directory, perms, verbose, followsymlinks):
           # Not in exec list. Regular file.
           os.chmod(somefile, int(fperms, 8))
           if verbose:
-            sys.stdout.write('file: %s' % somefile)
+            sys.stdout.write('file: %s\n' % somefile)
         else:
           # Is in the exec list. Script/Exec file.
           os.chmod(somefile, int(xperms, 8))
           if verbose:
-            sys.stdout.write('script/executable: %s' % somefile)
+            sys.stdout.write('script/executable: %s\n' % somefile)
 
 
 def main():
